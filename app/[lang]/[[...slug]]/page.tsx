@@ -6,7 +6,10 @@ import { ContactForm } from "@/components/ContactForm";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Icon } from "@/components/Icons";
+import { expertsPageContent } from "@/content/experts-page";
 import { getLocale, languages, pages, type Language, type PageSlug } from "@/lib/content";
+import { getAllExperts, getExpertBySlug, getExpertSlugs } from "@/lib/experts";
+import type { ExpertContent } from "@/content/experts/types";
 
 type RouteProps = { params: Promise<{ lang: string; slug?: string[] }> };
 
@@ -16,30 +19,36 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   const { lang: rawLang, slug } = await params;
   const lang = languages.includes(rawLang as Language) ? rawLang as Language : "en";
   const page = slug?.[0] as PageSlug | undefined;
+  const expert = slug?.[0] === "experts" && slug?.[1] ? await getExpertBySlug(slug[1]) : undefined;
   const copy = getLocale(lang);
-  const title = page ? copy.metadata.pageTitles[page] : copy.metadata.homeTitle;
-  const canonical = `/${lang}${page ? `/${page}` : ""}`;
+  const title = expert ? `${expert.name} | ${expert.role}` : page ? copy.metadata.pageTitles[page] : copy.metadata.homeTitle;
+  const canonical = `/${lang}${slug?.length ? `/${slug.join("/")}` : ""}`;
 
   return {
     title,
-    description: page === "services" ? copy.metadata.servicesDescription : copy.metadata.description,
+    description: expert?.shortDescription ?? (page === "services" ? copy.metadata.servicesDescription : copy.metadata.description),
     alternates: {
       canonical,
-      languages: Object.fromEntries(languages.map(code => [code, `/${code}${page ? `/${page}` : ""}`])),
+      languages: Object.fromEntries(languages.map(code => [code, `/${code}${slug?.length ? `/${slug.join("/")}` : ""}`])),
     },
   };
 }
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const expertSlugs = await getExpertSlugs();
   return languages.flatMap(lang => [
     { lang, slug: undefined },
     ...pages.map(page => ({ lang, slug: [page] })),
+    ...expertSlugs.map(slug => ({ lang, slug: ["experts", slug] })),
   ]);
 }
 
 export default async function LocalizedPage({ params }: RouteProps) {
   const { lang: rawLang, slug } = await params;
-  if (!languages.includes(rawLang as Language) || (slug?.length && (!pages.includes(slug[0] as PageSlug) || slug.length > 1))) {
+  const validPage = slug?.length ? pages.includes(slug[0] as PageSlug) : true;
+  const expert = slug?.length === 2 && slug[0] === "experts" ? await getExpertBySlug(slug[1]) : undefined;
+  const validNestedExpert = Boolean(expert);
+  if (!languages.includes(rawLang as Language) || !validPage || (slug && slug.length > 1 && !validNestedExpert)) {
     notFound();
   }
 
@@ -60,7 +69,7 @@ export default async function LocalizedPage({ params }: RouteProps) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <Header lang={lang} nav={[...copy.nav]} consult={copy.consult} />
-      <main>{page ? <InnerPage page={page} lang={lang} /> : <Home lang={lang} />}</main>
+      <main>{expert ? <ExpertProfilePage lang={lang} expert={expert} /> : page ? <InnerPage page={page} lang={lang} /> : <Home lang={lang} />}</main>
       <Footer lang={lang} />
     </>
   );
@@ -145,20 +154,13 @@ function Home({ lang }: { lang: Language }) {
       </section>
 
       <section className="section experts-preview">
-        <SectionHead kicker={home.experts.kicker} title={home.experts.title} />
-        <div className="expert-layout">
-          <div className="expert-portrait portrait-one">
-            <div className="portrait-monogram">CTO</div>
-            <div className="expert-info"><h3>{home.experts.leadRole}</h3><p>{home.experts.leadSkills}</p></div>
+        <div className="experts-home-compact">
+          <div>
+            <p className="eyebrow"><span />{expertsPageContent.homeKicker}</p>
+            <h2>{expertsPageContent.homeTitle}</h2>
+            <p>{expertsPageContent.homeText}</p>
           </div>
-          <div className="expert-portrait portrait-two">
-            <div className="portrait-monogram">SA</div>
-            <div className="expert-info"><h3>{home.experts.salesforceRole}</h3><p>{home.experts.salesforceSkills}</p></div>
-          </div>
-          <div className="expert-note">
-            <p>{home.experts.noteKicker}</p><strong>{home.experts.note}</strong>
-            <Link href={`/${lang}/experts`} className="text-link">{home.experts.link} <Icon name="arrow" /></Link>
-          </div>
+          <Link href={`/${lang}/experts`} className="button button-dark">{expertsPageContent.homeButton} <Icon name="arrow" /></Link>
         </div>
       </section>
 
@@ -265,22 +267,96 @@ function AboutPage({ lang }: { lang: Language }) {
   </>;
 }
 
-function ExpertsPage({ lang }: { lang: Language }) {
-  const page = getLocale(lang).pages.experts;
+async function ExpertsPage({ lang }: { lang: Language }) {
+  const experts = await getAllExperts();
   return <>
-    <PageHero kicker={page.kicker} title={page.title} text={page.text} />
-    <section className="section profile-grid">
-      {page.profiles.map(([monogram, role, experience, skills], index) => (
-        <article key={role}>
-          <div className={`profile-visual profile-${index + 1}`}><span>{monogram}</span></div>
-          <div className="profile-copy">
-            <span>{experience}</span><h2>{role}</h2><p>{skills}</p>
-            <div className="tag-row">{page.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
+    <PageHero kicker={expertsPageContent.pageKicker} title={expertsPageContent.pageTitle} text={expertsPageContent.pageText} />
+    <section className="section experts-grid-section">
+      <div className="experts-grid">
+      {experts.map(expert => (
+        <Link
+          href={`/${lang}/experts/${expert.slug}`}
+          className="expert-card"
+          key={expert.slug}
+          aria-label={`View ${expert.name}'s expert profile`}
+        >
+          <div className="expert-card-photo">
+            <img src={expert.heroImage} alt={`Portrait of ${expert.name}`} />
           </div>
-        </article>
+          <div className="expert-card-body">
+            <span>{expert.yearsExperience}</span>
+            <h2>{expert.name}</h2>
+            <strong>{expert.role}</strong>
+            <p>{expert.shortDescription}</p>
+            <div className="expert-card-tags">{expert.tags.slice(0, 4).map(tag => <span key={tag}>{tag}</span>)}</div>
+            <span className="expert-card-link">{expertsPageContent.cardCta} <Icon name="arrow" /></span>
+          </div>
+        </Link>
       ))}
+      </div>
     </section>
-    <FinalCta lang={lang} title={page.ctaTitle} text={page.ctaText} />
+    <FinalCta lang={lang} title={expertsPageContent.homeTitle} text={expertsPageContent.homeText} />
+  </>;
+}
+
+function ExpertProfilePage({ lang, expert }: { lang: Language; expert: ExpertContent }) {
+  return <>
+    <section className="expert-hero">
+      <div className="expert-hero-visual">
+        <div className="expert-card-grid" />
+        <img src={expert.heroImage} alt={`Portrait of ${expert.name}`} />
+      </div>
+      <div className="expert-hero-copy">
+        <p className="eyebrow"><span />{expertsPageContent.profileHeroKicker} · {expert.yearsExperience}</p>
+        <h1>{expert.name}</h1>
+        <strong>{expert.role}</strong>
+        <p>{expert.shortDescription}</p>
+        <div className="button-row">
+          <a href={`mailto:${expert.email}`} className="button button-dark">{expert.callToAction.buttonLabel} <Icon name="arrow" /></a>
+          <a href={expert.linkedin} className="button button-light" target="_blank" rel="noreferrer">{expertsPageContent.linkedinButton}</a>
+        </div>
+      </div>
+    </section>
+
+    <section className="section expert-intro">
+      <blockquote>{expert.quote}</blockquote>
+      <div>
+        <span className="mini-label">{expertsPageContent.sections.executiveSummary}</span>
+        {expert.executiveSummary.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+      </div>
+    </section>
+
+    <section className="section expert-capabilities">
+      <SectionHead kicker={expertsPageContent.sections.expertise} title={expertsPageContent.sections.expertiseTitle} />
+      <div className="expert-capability-grid">
+        {expert.expertise.map(item => <article key={item.title}><h2>{item.title}</h2><p>{item.description}</p></article>)}
+      </div>
+    </section>
+
+    <section className="section expert-split">
+      <div>
+        <span className="mini-label">{expertsPageContent.sections.industries}</span>
+        <ul>{expert.industries.map(item => <li key={item}>{item}</li>)}</ul>
+      </div>
+      <div>
+        <span className="mini-label">{expertsPageContent.sections.engagements}</span>
+        <ul>{expert.engagements.map(item => <li key={item}>{item}</li>)}</ul>
+      </div>
+    </section>
+
+    <section className="section expert-certifications">
+      <SectionHead kicker={expertsPageContent.sections.certifications} title={expertsPageContent.sections.certificationsTitle} />
+      <div>{expert.certifications.map(item => <span key={item}><Icon name="check" />{item}</span>)}</div>
+    </section>
+
+    <section className="section expert-technology">
+      <SectionHead kicker={expertsPageContent.sections.technologies} title={expertsPageContent.sections.technologiesTitle} />
+      <div className="expert-technology-tags">
+        {expert.technologies.map(item => <span key={item}>{item}</span>)}
+      </div>
+    </section>
+
+    <FinalCta lang={lang} title={expert.callToAction.title} text={expert.callToAction.text} />
   </>;
 }
 
