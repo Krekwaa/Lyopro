@@ -16,6 +16,7 @@ export const expertsPageContent = {
     expertise: "Expertise",
     expertiseTitle: "Where this expert creates value.",
     industries: "Industries",
+    languages: "Languages",
     engagements: "Typical Engagements",
     certifications: "Featured Certifications",
     certificationsTitle: "Credentials and applied expertise.",

@@ -12,6 +12,7 @@ export type ExpertContent = {
     description: string;
   }[];
   industries: string[];
+  languages: string[];
   certifications: string[];
   engagements: string[];
   technologies: string[];

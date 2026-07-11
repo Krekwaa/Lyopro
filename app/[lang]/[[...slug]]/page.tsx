@@ -339,6 +339,10 @@ function ExpertProfilePage({ lang, expert }: { lang: Language; expert: ExpertCon
         <ul>{expert.industries.map(item => <li key={item}>{item}</li>)}</ul>
       </div>
       <div>
+        <span className="mini-label">{expertsPageContent.sections.languages}</span>
+        <ul>{expert.languages.map(item => <li key={item}>{item}</li>)}</ul>
+      </div>
+      <div>
         <span className="mini-label">{expertsPageContent.sections.engagements}</span>
         <ul>{expert.engagements.map(item => <li key={item}>{item}</li>)}</ul>
       </div>

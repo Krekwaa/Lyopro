@@ -43,6 +43,14 @@ export const expert: ExpertContent = {
     "Professional services",
     "Cloud-enabled organizations",
   ],
+  languages: [
+    "English",
+    "Ukrainian",
+    "Spanish",
+    "Russian",
+    "Arabic",
+    "Portuguese",
+  ],
   certifications: [
     "AWS Certified Solutions Architect - Professional",
     "Salesforce Certified System Architect",
