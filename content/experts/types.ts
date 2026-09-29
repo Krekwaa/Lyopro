@@ -4,6 +4,7 @@ export type ExpertContent = {
   role: string;
   shortDescription: string;
   yearsExperience: string;
+  showProfileHeroKicker?: boolean;
   heroImage: string;
   tags: string[];
   executiveSummary: string[];

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArchitectureVisual } from "@/components/ArchitectureVisual";
 import { ContactForm } from "@/components/ContactForm";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { HeroEngineeringFlow } from "@/components/HeroEngineeringFlow";
 import { Icon } from "@/components/Icons";
+import { caseStudies, getCaseStudyBySlug, type CaseStudy } from "@/content/case-studies";
 import { expertsPageContent } from "@/content/experts-page";
 import { getLocale, languages, pages, type Language, type PageSlug } from "@/lib/content";
 import { getAllExperts, getExpertBySlug, getExpertSlugs } from "@/lib/experts";
@@ -20,13 +21,14 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   const lang = languages.includes(rawLang as Language) ? rawLang as Language : "en";
   const page = slug?.[0] as PageSlug | undefined;
   const expert = slug?.[0] === "experts" && slug?.[1] ? await getExpertBySlug(slug[1]) : undefined;
+  const caseStudy = slug?.[0] === "case-studies" && slug?.[1] ? getCaseStudyBySlug(slug[1]) : undefined;
   const copy = getLocale(lang);
-  const title = expert ? `${expert.name} | ${expert.role}` : page ? copy.metadata.pageTitles[page] : copy.metadata.homeTitle;
+  const title = caseStudy?.title ?? (expert ? `${expert.name} | ${expert.role}` : page ? copy.metadata.pageTitles[page] : copy.metadata.homeTitle);
   const canonical = `/${lang}${slug?.length ? `/${slug.join("/")}` : ""}`;
 
   return {
     title,
-    description: expert?.shortDescription ?? (page === "services" ? copy.metadata.servicesDescription : copy.metadata.description),
+    description: caseStudy?.summary ?? expert?.shortDescription ?? (page === "services" ? copy.metadata.servicesDescription : copy.metadata.description),
     alternates: {
       canonical,
       languages: Object.fromEntries(languages.map(code => [code, `/${code}${slug?.length ? `/${slug.join("/")}` : ""}`])),
@@ -40,6 +42,7 @@ export async function generateStaticParams() {
     { lang, slug: undefined },
     ...pages.map(page => ({ lang, slug: [page] })),
     ...expertSlugs.map(slug => ({ lang, slug: ["experts", slug] })),
+    ...caseStudies.map(caseStudy => ({ lang, slug: ["case-studies", caseStudy.slug] })),
   ]);
 }
 
@@ -47,13 +50,15 @@ export default async function LocalizedPage({ params }: RouteProps) {
   const { lang: rawLang, slug } = await params;
   const validPage = slug?.length ? pages.includes(slug[0] as PageSlug) : true;
   const expert = slug?.length === 2 && slug[0] === "experts" ? await getExpertBySlug(slug[1]) : undefined;
-  const validNestedExpert = Boolean(expert);
-  if (!languages.includes(rawLang as Language) || !validPage || (slug && slug.length > 1 && !validNestedExpert)) {
+  const caseStudy = slug?.length === 2 && slug[0] === "case-studies" ? getCaseStudyBySlug(slug[1]) : undefined;
+  const validNestedPage = Boolean(expert || caseStudy);
+  if (!languages.includes(rawLang as Language) || !validPage || (slug && slug.length > 1 && !validNestedPage)) {
     notFound();
   }
 
   const lang = rawLang as Language;
   const page = slug?.[0] as PageSlug | undefined;
+  const isHome = !page && !expert && !caseStudy;
   const copy = getLocale(lang);
   const schema = {
     "@context": "https://schema.org",
@@ -66,12 +71,12 @@ export default async function LocalizedPage({ params }: RouteProps) {
   };
 
   return (
-    <>
+    <div className={isHome ? "home-page" : undefined}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <Header lang={lang} nav={[...copy.nav]} consult={copy.consult} />
-      <main>{expert ? <ExpertProfilePage lang={lang} expert={expert} /> : page ? <InnerPage page={page} lang={lang} /> : <Home lang={lang} />}</main>
+      <main>{expert ? <ExpertProfilePage lang={lang} expert={expert} /> : caseStudy ? <CaseStudyPage lang={lang} caseStudy={caseStudy} /> : page ? <InnerPage page={page} lang={lang} /> : <Home lang={lang} />}</main>
       <Footer lang={lang} />
-    </>
+    </div>
   );
 }
 
@@ -82,33 +87,30 @@ function Home({ lang }: { lang: Language }) {
 
   return (
     <>
-      <section className="hero">
-        <div className="hero-inner">
-          <div className="hero-copy">
-            <p className="eyebrow"><span />{home.eyebrow}</p>
-            <h1>{home.headline}</h1>
-            <p className="hero-intro">{home.intro}</p>
-            <div className="button-row">
-              <Link href={`/${lang}/contact`} className="button button-dark">{copy.consult}<Icon name="arrow" /></Link>
-              <Link href={`/${lang}/services`} className="button button-light">{copy.explore}</Link>
+      <div className="home-hero-shell">
+        <section className="hero">
+          <div className="hero-inner">
+            <div className="hero-copy">
+              <p className="eyebrow"><span />{home.eyebrow}</p>
+              <h1>{home.headline}</h1>
+              <p className="hero-intro">{home.intro}</p>
+              <div className="button-row">
+                <Link href={`/${lang}/contact`} className="button button-dark">{copy.consult}<Icon name="arrow" /></Link>
+                <Link href={`/${lang}/services`} className="button button-light">{copy.explore}</Link>
+              </div>
+              <p className="trust-line">{home.trust}</p>
             </div>
-            <p className="trust-line">{home.trust}</p>
+            <HeroEngineeringFlow />
           </div>
-          <ArchitectureVisual
-            labels={home.visual.labels}
-            statusLabel={home.visual.statusLabel}
-            status={home.visual.status}
-            aria={home.visual.aria}
-          />
-        </div>
-      </section>
+        </section>
 
-      <section className="metrics">
-        <div className="metrics-intro"><span>{home.metricsIntro.kicker}</span><p>{home.metricsIntro.text}</p></div>
-        {home.metrics.map(([value, label]) => (
-          <div className="metric" key={label}><strong>{value}</strong><span>{label}</span></div>
-        ))}
-      </section>
+        <section className="metrics">
+          <div className="metrics-intro"><span>{home.metricsIntro.kicker}</span><p>{home.metricsIntro.text}</p></div>
+          {home.metrics.map(([value, label]) => (
+            <div className="metric" key={label}><strong>{value}</strong><span>{label}</span></div>
+          ))}
+        </section>
+      </div>
 
       <section className="section problems-section">
         <SectionHead kicker={home.problemsKicker} title={home.problemsTitle} />
@@ -167,13 +169,13 @@ function Home({ lang }: { lang: Language }) {
       <section className="section cases-section">
         <SectionHead kicker={home.casesKicker} title={home.casesTitle} light />
         <div className="case-grid">
-          {home.cases.map(item => (
-            <article className="case-card" key={item.number}>
-              <div className="case-top"><span>{item.industry}</span><span>{item.number} / 03</span></div>
+          {caseStudies.slice(0, 3).map(item => (
+            <article className="case-card" key={item.slug}>
+              <div className="case-top"><span>{item.category}</span><span>{item.number} / 04</span></div>
               <div className="case-diagram"><i /><i /><i /><span /></div>
-              <h3>{item.title}</h3><p>{item.text}</p>
+              <h3>{item.title}</h3><p>{item.summary}</p>
               <div className="tag-row">{item.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
-              <Link href={`/${lang}/case-studies`} className="case-link">{home.caseLink} <Icon name="arrow" /></Link>
+              <Link href={`/${lang}/case-studies/${item.slug}`} className="case-link">{home.caseLink} <Icon name="arrow" /></Link>
             </article>
           ))}
         </div>
@@ -236,21 +238,114 @@ function ServicesPage({ lang }: { lang: Language }) {
 function CasesPage({ lang }: { lang: Language }) {
   const copy = getLocale(lang);
   const page = copy.pages.cases;
-  const cases = [...copy.home.cases, page.fourth];
 
   return <>
     <PageHero kicker={page.kicker} title={page.title} text={page.text} />
     <section className="section case-listing">
-      {cases.map(item => (
-        <article key={item.number}>
+      {caseStudies.map(item => (
+        <Link
+          href={`/${lang}/case-studies/${item.slug}`}
+          className="case-listing-link"
+          key={item.slug}
+          aria-label={`View case study: ${item.title}`}
+        >
           <div className="case-index">{item.number}</div>
-          <div><span className="mini-label">{item.industry}</span><h2>{item.title}</h2><p>{item.text}</p><div className="tag-row">{item.tags.map(tag => <span key={tag}>{tag}</span>)}</div></div>
+          <div><span className="mini-label">{item.category}</span><h2>{item.title}</h2><p>{item.summary}</p><div className="tag-row">{item.tags.map(tag => <span key={tag}>{tag}</span>)}</div></div>
           <span className="round-arrow"><Icon name="arrow" /></span>
-        </article>
+        </Link>
       ))}
     </section>
     <FinalCta lang={lang} title={page.ctaTitle} text={page.ctaText} />
   </>;
+}
+
+function CaseStudyPage({ lang, caseStudy }: { lang: Language; caseStudy: CaseStudy }) {
+  const currentIndex = caseStudies.findIndex(item => item.slug === caseStudy.slug);
+  const nextCase = caseStudies[(currentIndex + 1) % caseStudies.length];
+
+  return <>
+    <section className="case-study-hero">
+      <Link href={`/${lang}/case-studies`} className="case-study-back">← Expertise</Link>
+      <p className="eyebrow"><span />Case Study</p>
+      <h1>{caseStudy.title}</h1>
+      <p className="case-study-subtitle">{caseStudy.summary}</p>
+      <div className="case-study-metadata">
+        {caseStudy.metadata.map(item => <div key={item.label}><span>{item.label}</span><strong>{item.value}</strong></div>)}
+      </div>
+    </section>
+
+    <CaseStudyTextSection kicker="Overview" title="Context and scope" paragraphs={caseStudy.overview} />
+
+    <section className="section case-study-split">
+      <CaseStudySectionHead kicker="The Challenge" title="What the engagement needed to resolve" />
+      <ul className="case-study-list">{caseStudy.challenge.map(item => <li key={item}>{item}</li>)}</ul>
+    </section>
+
+    <section className="section case-study-section">
+      <CaseStudySectionHead kicker="What We Delivered" title="A complete working capability" />
+      <div className="case-study-card-grid">
+        {caseStudy.deliverables.map((item, index) => <article key={item.title}><span>0{index + 1}</span><h3>{item.title}</h3><p>{item.text}</p></article>)}
+      </div>
+    </section>
+
+    <section className="case-study-architecture-section">
+      <div className="case-study-architecture-inner">
+        <CaseStudySectionHead kicker="Solution Architecture" title="How the system works" light />
+        <ArchitectureFlow architecture={caseStudy.architecture} />
+      </div>
+    </section>
+
+    <section className="section case-study-split case-study-technical">
+      <CaseStudySectionHead kicker="Technical Approach" title="Confirmed platforms and design decisions" />
+      <div className="case-study-tag-list">{caseStudy.technicalApproach.map(item => <span key={item}>{item}</span>)}</div>
+    </section>
+
+    <section className="section case-study-section">
+      <CaseStudySectionHead kicker="Key Engineering Challenges" title="The constraints that shaped the solution" />
+      <div className="case-study-challenge-grid">
+        {caseStudy.engineeringChallenges.map((item, index) => <article key={item.title}><span>0{index + 1}</span><h3>{item.title}</h3><p>{item.text}</p></article>)}
+      </div>
+    </section>
+
+    <section className="section case-study-split case-study-role">
+      <CaseStudySectionHead kicker="Our Role" title="Senior expertise applied to delivery" />
+      <ul className="case-study-role-list">{caseStudy.role.map(item => <li key={item}>{item}</li>)}</ul>
+    </section>
+
+    <CaseStudyTextSection kicker="Outcome" title="What the client received" paragraphs={caseStudy.outcome} outcome />
+
+    <nav className="case-study-next" aria-label="Case study navigation">
+      <span>Next case study</span>
+      <Link href={`/${lang}/case-studies/${nextCase.slug}`}>{nextCase.title} <Icon name="arrow" /></Link>
+    </nav>
+  </>;
+}
+
+function CaseStudySectionHead({ kicker, title, light = false }: { kicker: string; title: string; light?: boolean }) {
+  return <div className={`case-study-section-head ${light ? "light" : ""}`}><p><span />{kicker}</p><h2>{title}</h2></div>;
+}
+
+function CaseStudyTextSection({ kicker, title, paragraphs, outcome = false }: { kicker: string; title: string; paragraphs: string[]; outcome?: boolean }) {
+  return <section className={`section case-study-text-section ${outcome ? "case-study-outcome" : ""}`}>
+    <CaseStudySectionHead kicker={kicker} title={title} />
+    <div>{paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
+  </section>;
+}
+
+function ArchitectureFlow({ architecture }: { architecture: CaseStudy["architecture"] }) {
+  return <div className="case-study-architecture" role="img" aria-label={`Architecture flow: ${architecture.nodes.join(" to ")}${architecture.support ? `. Supporting connection: ${architecture.support}` : ""}${architecture.branches?.length ? `, branching to ${architecture.branches.join(", ")}` : ""}`}>
+    {architecture.support && <div className="architecture-support">{architecture.support}</div>}
+    <div className="architecture-flow">
+      {architecture.nodes.map((node, index) => <div className="architecture-step-wrap" key={node}>
+        <div className="architecture-step">{node}</div>
+        {index < architecture.nodes.length - 1 && <span className="architecture-arrow" aria-hidden="true">→</span>}
+      </div>)}
+    </div>
+    {architecture.branches && <div className="architecture-branches">
+      {architecture.branches.map(branch => <div key={branch}>{branch}</div>)}
+    </div>}
+    {architecture.note && <p className="architecture-note">{architecture.note}</p>}
+  </div>;
 }
 
 function AboutPage({ lang }: { lang: Language }) {
@@ -307,7 +402,7 @@ function ExpertProfilePage({ lang, expert }: { lang: Language; expert: ExpertCon
         <img src={expert.heroImage} alt={`Portrait of ${expert.name}`} />
       </div>
       <div className="expert-hero-copy">
-        <p className="eyebrow"><span />{expertsPageContent.profileHeroKicker} · {expert.yearsExperience}</p>
+        <p className="eyebrow"><span />{expert.showProfileHeroKicker === false ? expert.yearsExperience : <>{expertsPageContent.profileHeroKicker} · {expert.yearsExperience}</>}</p>
         <h1>{expert.name}</h1>
         <strong>{expert.role}</strong>
         <p>{expert.shortDescription}</p>
@@ -350,7 +445,10 @@ function ExpertProfilePage({ lang, expert }: { lang: Language; expert: ExpertCon
 
     <section className="section expert-certifications">
       <SectionHead kicker={expertsPageContent.sections.certifications} title={expertsPageContent.sections.certificationsTitle} />
-      <div>{expert.certifications.map(item => <span key={item}><Icon name="check" />{item}</span>)}</div>
+      <div>{expert.certifications.length > 0
+        ? expert.certifications.map(item => <span key={item}><Icon name="check" />{item}</span>)
+        : <span><Icon name="check" />Credentials and courses will be added soon.</span>}
+      </div>
     </section>
 
     <section className="section expert-technology">

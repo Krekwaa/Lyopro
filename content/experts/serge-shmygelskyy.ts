@@ -6,7 +6,7 @@ export const expert: ExpertContent = {
   role: "Fractional CTO · Enterprise Technology Architect",
   shortDescription: "Helping organizations make better technology decisions, modernize complex systems, and reduce delivery risk.",
   yearsExperience: "20+ years of technology leadership",
-  heroImage: "/images/Serge2.jpg",
+  heroImage: "/images/Serge1.jpg",
   tags: ["Technology Strategy", "Enterprise Architecture", "Cloud & AI", "Engineering Leadership"],
   executiveSummary: [
     "Senior technology advisor helping organizations make better architecture decisions, modernize complex systems and reduce the delivery risk behind consequential technology investments.",

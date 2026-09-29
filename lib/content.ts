@@ -45,9 +45,14 @@ const certifications = {
   ],
 };
 
+const vladyslavCertifications = [
+  "Elements of AI - University of Helsinki",
+  "Gen AI and Agentic AI for Software Engineering - SET University",
+];
+
 const content = {
   en: {
-    nav: ["Services", "Case Studies", "About", "Experts", "Certifications", "Insights"],
+    nav: ["Services", "Expertise", "About", "Experts", "Certifications", "Insights"],
     consult: "Schedule a consultation",
     email: "Send an email",
     explore: "Explore services",
@@ -63,7 +68,7 @@ const content = {
       servicesDescription: "CTO-level technology consulting, solution architecture, Salesforce, cloud, DevOps, data and custom software engineering.",
       pageTitles: {
         services: "Engineering Services",
-        "case-studies": "Case Studies",
+        "case-studies": "Expertise",
         about: "About",
         experts: "Experts",
         certifications: "Certifications",
@@ -79,7 +84,7 @@ const content = {
       company: "Company",
       connect: "Connect",
       services: "Services",
-      cases: "Case studies",
+      cases: "Expertise",
       certifications: "Certifications",
       about: "About",
       experts: "Experts",
@@ -161,11 +166,6 @@ const content = {
       casesKicker: "Selected work",
       casesTitle: "Proven thinking across complex technical projects.",
       caseLink: "View case study",
-      cases: [
-        { number: "01", industry: "Enterprise operations", title: "Internal system modernization", text: "Restructuring a business-critical platform for reliability, maintainability and long-term scale.", tags: ["Architecture", "Cloud", "Modernization"] },
-        { number: "02", industry: "Customer operations", title: "Salesforce architecture & integration", text: "Connecting fragmented workflows into a coherent enterprise CRM ecosystem.", tags: ["Salesforce", "Integration", "Automation"] },
-        { number: "03", industry: "Digital products", title: "Scalable platform foundation", text: "Creating a clear technical foundation for an ambitious product entering its next growth stage.", tags: ["Product", "AWS", "Data"] },
-      ],
       processKicker: "How we work",
       processTitle: "A disciplined path from ambiguity to reliable delivery.",
       process: [
@@ -191,10 +191,9 @@ const content = {
         ctaText: "Start with a direct technical conversation about the system, constraints and viable paths forward.",
       },
       cases: {
-        kicker: "Case studies",
-        title: "Serious systems. Measurable business outcomes.",
-        text: "A flexible case library for architecture, Salesforce, cloud, modernization and custom internal platforms. Detailed client work will be published as approvals become available.",
-        fourth: { number: "04", industry: "Business services", title: "Operations automation platform", text: "Automating operational workflows to reduce manual work and make delivery more predictable.", tags: ["Workflows", "Data", "Platform"] },
+        kicker: "Expertise",
+        title: "Selected systems. Clear engineering outcomes.",
+        text: "Four case studies across public-sector data, enterprise reporting, automated telephony and telecom transformation.",
         ctaTitle: "Your project may be the next case worth discussing.",
         ctaText: "Tell us where the current system is limiting the business.",
       },
@@ -239,6 +238,7 @@ const content = {
           ["Databases & Enterprise", certifications.enterprise],
           ["Data & Analytics", certifications.data],
           ["Business & Transformation", certifications.business],
+          ["Vladyslav Shmygelskyy", vladyslavCertifications],
           ["Languages", ["English", "Ukrainian"]],
         ],
         ctaTitle: "Credentials matter. Applied judgment matters more.",
@@ -297,7 +297,7 @@ const content = {
     },
   },
   ua: {
-    nav: ["Послуги", "Кейси", "Про нас", "Експерти", "Сертифікації", "Матеріали"],
+    nav: ["Послуги", "Експертиза", "Про нас", "Експерти", "Сертифікації", "Матеріали"],
     consult: "Запланувати консультацію",
     email: "Написати нам",
     explore: "Переглянути послуги",
@@ -313,7 +313,7 @@ const content = {
       servicesDescription: "Технологічний консалтинг CTO-рівня, архітектура рішень, Salesforce, хмари, DevOps, дані та розробка спеціалізованого ПЗ.",
       pageTitles: {
         services: "Інженерні послуги",
-        "case-studies": "Кейси",
+        "case-studies": "Експертиза",
         about: "Про нас",
         experts: "Експерти",
         certifications: "Сертифікації",
@@ -329,7 +329,7 @@ const content = {
       company: "Компанія",
       connect: "Зв’язок",
       services: "Послуги",
-      cases: "Кейси",
+      cases: "Експертиза",
       certifications: "Сертифікації",
       about: "Про нас",
       experts: "Експерти",
@@ -411,11 +411,6 @@ const content = {
       casesKicker: "Вибрані проєкти",
       casesTitle: "Перевірений досвід у складних технічних проєктах.",
       caseLink: "Переглянути кейс",
-      cases: [
-        { number: "01", industry: "Корпоративні операції", title: "Модернізація внутрішньої системи", text: "Реструктуризація критичної бізнес-платформи для надійності, підтримуваності та довгострокового масштабу.", tags: ["Архітектура", "Хмара", "Модернізація"] },
-        { number: "02", industry: "Робота з клієнтами", title: "Архітектура та інтеграція Salesforce", text: "Об’єднання розрізнених процесів у цілісну корпоративну CRM-екосистему.", tags: ["Salesforce", "Інтеграція", "Автоматизація"] },
-        { number: "03", industry: "Цифрові продукти", title: "Масштабована основа платформи", text: "Створення чіткої технічної основи для амбітного продукту на наступному етапі зростання.", tags: ["Продукт", "AWS", "Дані"] },
-      ],
       processKicker: "Як ми працюємо",
       processTitle: "Дисциплінований шлях від невизначеності до надійного результату.",
       process: [
@@ -441,10 +436,9 @@ const content = {
         ctaText: "Почніть із прямої технічної розмови про систему, обмеження та реалістичні шляхи вперед.",
       },
       cases: {
-        kicker: "Кейси",
-        title: "Серйозні системи. Вимірювані бізнес-результати.",
-        text: "Гнучка бібліотека кейсів з архітектури, Salesforce, хмар, модернізації та внутрішніх платформ. Детальні проєкти публікуватимуться після погодження.",
-        fourth: { number: "04", industry: "Бізнес-послуги", title: "Платформа автоматизації операцій", text: "Автоматизація операційних процесів для зменшення ручної роботи та передбачуванішого виконання.", tags: ["Процеси", "Дані", "Платформа"] },
+        kicker: "Експертиза",
+        title: "Вибрані системи. Чіткі інженерні результати.",
+        text: "Чотири кейси з даних державного сектору, корпоративної звітності, автоматизованої телефонії та телеком-трансформації.",
         ctaTitle: "Ваш проєкт може стати наступним кейсом для обговорення.",
         ctaText: "Розкажіть, де поточна система обмежує бізнес.",
       },
@@ -489,6 +483,7 @@ const content = {
           ["Бази даних і корпоративні системи", certifications.enterprise],
           ["Дані та аналітика", certifications.data],
           ["Бізнес і трансформація", certifications.business],
+          ["Vladyslav Shmygelskyy", vladyslavCertifications],
           ["Мови", ["Англійська", "Українська"]],
         ],
         ctaTitle: "Сертифікації важливі. Практичне судження — ще важливіше.",
