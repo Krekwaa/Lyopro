@@ -1,0 +1,88 @@
+import type { ExpertContent } from "./types";
+
+export const expert: ExpertContent = {
+  slug: "valerii-bachynskyi",
+  name: "Valerii Bachynskyi",
+  role: "Senior Data Engineer",
+  shortDescription: "Building reliable ETL/ELT, data integration and geospatial pipelines for complex, high-volume operational systems.",
+  yearsExperience: "18+ years in data engineering and software development",
+  heroImage: "/images/Valerii_Bachynskyi.jpg",
+  tags: ["Data Engineering", "ETL / ELT", "Data Integration", "Geospatial Systems"],
+  executiveSummary: [
+    "Senior Data Engineer with more than 18 years of IT experience across telecommunications, public-sector data engineering and enterprise analytics.",
+    "Valerii designs and operates production ETL/ELT pipelines in Python and SQL, covering source analysis, data modelling, validation, reconciliation, go-live and ongoing support.",
+    "His work focuses on reliable, repeatable processing and heterogeneous system integration at scale, including environments containing hundreds of millions of records and documents.",
+  ],
+  expertise: [
+    {
+      title: "ETL / ELT Engineering",
+      description: "Production-grade pipelines with Python, SQL, Airflow and Prefect, designed for scheduled execution, safe reruns and operational support.",
+    },
+    {
+      title: "Data Integration & Quality",
+      description: "Integration of heterogeneous sources with validation, normalization, reconciliation, audit trails and reliable CDC or upsert patterns.",
+    },
+    {
+      title: "Large-Scale Data Processing",
+      description: "Custom Python and Go tooling for migrations and batch workloads involving hundreds of millions of records, with checkpoint and restart support.",
+    },
+    {
+      title: "Geospatial Data Engineering",
+      description: "Spatial enrichment and public geoportal delivery using ArcGIS Enterprise, ArcGIS Pro, ArcPy, SDE and ArcGIS REST APIs.",
+    },
+    {
+      title: "Analytics Platforms & Infrastructure",
+      description: "Enterprise database, Tableau Server and Linux-based platform delivery, including automation, administration and production integration.",
+    },
+  ],
+  industries: [
+    "Telecommunications",
+    "Public sector",
+    "Mineral resources",
+    "Geospatial data",
+    "Business intelligence & analytics",
+  ],
+  languages: [
+    "Ukrainian - Native",
+    "English - Working Proficiency",
+    "Polish - Elementary",
+  ],
+  certifications: [],
+  engagements: [
+    "ETL/ELT pipeline architecture and implementation",
+    "Data integration, validation and reconciliation",
+    "Large-scale data migration and batch processing",
+    "Geospatial processing and ArcGIS integration",
+    "Workflow orchestration and production support",
+    "Tableau Server deployment and automation",
+  ],
+  technologies: [
+    "Python",
+    "SQL",
+    "Go",
+    "Apache Airflow",
+    "Prefect",
+    "dbt",
+    "Kafka",
+    "Pydantic",
+    "Oracle",
+    "SQL Server",
+    "PostgreSQL",
+    "Vertica",
+    "Couchbase",
+    "ArcGIS Enterprise",
+    "ArcPy",
+    "Tableau",
+    "AWS S3",
+    "Linux",
+    "Docker",
+  ],
+  quote: "Keep learning, and you will succeed.",
+  linkedin: "https://www.linkedin.com/in/valerii-bachynskyi-9b86643/",
+  email: "hello@lyopro.com",
+  callToAction: {
+    title: "Book a Consultation",
+    text: "Discuss the data platform, integration or migration challenge that needs senior engineering judgment before it becomes expensive.",
+    buttonLabel: "Book Consultation",
+  },
+};

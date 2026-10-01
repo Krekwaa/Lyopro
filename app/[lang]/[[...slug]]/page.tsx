@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ContactForm } from "@/components/ContactForm";
@@ -125,7 +126,7 @@ function Home({ lang }: { lang: Language }) {
       </section>
 
       <section className="section services-section">
-        <SectionHead kicker={home.servicesKicker} title={home.servicesTitle} light />
+      <SectionHead kicker={home.servicesKicker} title={home.servicesTitle} />
         <div className="service-list">
           {home.services.map(service => (
             <Link className="service-row" href={`/${lang}/services`} key={service.id}>
@@ -167,7 +168,7 @@ function Home({ lang }: { lang: Language }) {
       </section>
 
       <section className="section cases-section">
-        <SectionHead kicker={home.casesKicker} title={home.casesTitle} light />
+      <SectionHead kicker={home.casesKicker} title={home.casesTitle} />
         <div className="case-grid">
           {caseStudies.slice(0, 3).map(item => (
             <article className="case-card" key={item.slug}>
@@ -413,8 +414,8 @@ function ExpertProfilePage({ lang, expert }: { lang: Language; expert: ExpertCon
       </div>
     </section>
 
-    <section className="section expert-intro">
-      <blockquote>{expert.quote}</blockquote>
+    <section className={`section expert-intro${expert.quote ? "" : " expert-intro-no-quote"}`}>
+      {expert.quote && <blockquote>{expert.quote}</blockquote>}
       <div>
         <span className="mini-label">{expertsPageContent.sections.executiveSummary}</span>
         {expert.executiveSummary.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
@@ -531,14 +532,28 @@ function SectionHead({ kicker, title, light = false }: { kicker: string; title: 
 
 function FinalCta({ lang, title, text }: { lang: Language; title: string; text: string }) {
   const copy = getLocale(lang).finalCta;
+  const visualSteps = lang === "ua"
+    ? ["Завдання", "Інженерна оцінка", "Наступний крок"]
+    : ["Challenge", "Engineering review", "Next step"];
   return (
     <section className="final-cta">
-      <div className="cta-orbit"><i /><i /><i /></div>
-      <div>
+      <div className="final-cta-copy">
         <span>{copy.kicker}</span><h2>{title}</h2><p>{text}</p>
         <div className="button-row">
           <Link href={`/${lang}/contact`} className="button button-white">{copy.consult} <Icon name="arrow" /></Link>
           <a href="mailto:hello@lyopro.com" className="button button-outline">{copy.email}</a>
+        </div>
+      </div>
+      <div className="cta-technical-visual" aria-hidden="true">
+        <div className="cta-flow">
+          {visualSteps.map((step, index) => <Fragment key={step}>
+            <div className="cta-step">
+              <span>0{index + 1}</span>
+              <i />
+              <strong>{step}</strong>
+            </div>
+            {index < visualSteps.length - 1 && <div className="cta-connector"><i /></div>}
+          </Fragment>)}
         </div>
       </div>
     </section>
