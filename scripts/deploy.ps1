@@ -60,24 +60,27 @@ Assert-LastCommand "S3 sync"
 Assert-LastCommand "Static asset upload"
 
 # The current CloudFront distribution uses the S3 REST origin without a
-# directory-index rewrite. Exact trailing-slash objects keep clean URLs working.
+# directory-index rewrite. Upload route objects both with and without a trailing
+# slash so /en and /en/ (and every nested route) resolve to the same page.
 $outRoot = (Resolve-Path ".\out").Path
 $pages = Get-ChildItem ".\out" -Recurse -Filter "index.html" |
   Where-Object { $_.DirectoryName -ne $outRoot }
 
 foreach ($page in $pages) {
   $relativeDirectory = $page.DirectoryName.Substring($outRoot.Length + 1).Replace("\", "/")
-  $key = "$relativeDirectory/"
+  $routeKeys = @($relativeDirectory, "$relativeDirectory/")
 
-  & $aws s3api put-object `
-    --bucket $Bucket `
-    --key $key `
-    --body $page.FullName `
-    --content-type "text/html; charset=utf-8" `
-    --cache-control "public,max-age=0,must-revalidate" `
-    --profile $Profile `
-    --no-cli-pager | Out-Null
-  Assert-LastCommand "Route upload: $key"
+  foreach ($key in $routeKeys) {
+    & $aws s3api put-object `
+      --bucket $Bucket `
+      --key $key `
+      --body $page.FullName `
+      --content-type "text/html; charset=utf-8" `
+      --cache-control "public,max-age=0,must-revalidate" `
+      --profile $Profile `
+      --no-cli-pager | Out-Null
+    Assert-LastCommand "Route upload: $key"
+  }
 }
 
 Write-Host "Invalidating CloudFront..."
