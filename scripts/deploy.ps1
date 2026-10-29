@@ -30,10 +30,14 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $backupPath = Join-Path $projectRoot "deployment-backups\$timestamp"
 New-Item -ItemType Directory -Force -Path $backupPath | Out-Null
 
+# Clean-route aliases such as `en` and `en/...` cannot coexist as a file and a
+# directory on Windows. Back up the canonical build assets; deploy recreates
+# every extensionless route alias from its corresponding index.html.
 Write-Host "Backing up the current website..."
 & $aws s3 sync "s3://$Bucket/" $backupPath `
   --profile $Profile `
-  --exclude "*/" `
+  --exclude "*" `
+  --include "*.*" `
   --only-show-errors `
   --no-cli-pager
 Assert-LastCommand "Backup"
